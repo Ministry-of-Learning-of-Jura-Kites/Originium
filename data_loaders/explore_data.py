@@ -19,7 +19,7 @@ def load_data_from_file(*args, **kwargs):
     filepath = "/home/src/Downloads/Data 2018-2023/Project/2023/202302889.json"
     df = pd.DataFrame(FileIO().load(filepath))
 
-    return df.head()
+    return df
 
 @test
 def test_output(output, *args) -> None:
