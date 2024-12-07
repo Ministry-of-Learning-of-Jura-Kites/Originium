@@ -6,6 +6,7 @@ if 'test' not in globals():
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
+import json
 
 def get_from_path_or_none(data, path):
     if type(path) is not list:
@@ -15,6 +16,9 @@ def get_from_path_or_none(data, path):
             return None
         data = data[property]
     return data
+
+def ensure_list_data(x):
+    return x if isinstance(x, list) else [x]
 
 @data_loader
 def load_data_from_file(*args, **kwargs):
@@ -29,6 +33,8 @@ def load_data_from_file(*args, **kwargs):
     """
     data_list = []
     paths = list(Path("Data 2018-2023/Project").glob("*/*"))
+    paths = paths[:10]  # Limit to the first 100 files
+
     total_files = len(paths)
     update_step = max(1, total_files // 10)  # Update every 10% or at least 1 file
 
@@ -49,6 +55,7 @@ def load_data_from_file(*args, **kwargs):
                 filtered_data['references'] = get_from_path_or_none(data, ['abstracts-retrieval-response', 'item', 'bibrecord', "tail", "bibliography", "reference"])
                 filtered_data['keywords'] = get_from_path_or_none(data, ['abstracts-retrieval-response', 'authkeywords', 'author-keyword'])
                 data_list.append(filtered_data)
+                print(data_list)
             except Exception as e:
                 print(f"Failed: {path}\nException: {repr(e)}")
 
@@ -57,6 +64,15 @@ def load_data_from_file(*args, **kwargs):
 
     print("Reading files done.")
     merged_df = pd.DataFrame(data_list)
+    # merged_df["publish_date"] = pd.to_datetime(merged_df["publish_date"])
+
+    # list_columns = ["classification_codes", "affiliations", "references", "keywords"]
+    # for list_column in list_columns:
+    #     merged_df[list_column] = merged_df[list_column].apply(ensure_list_data)
+
+    # json_columns = ["classification_codes", "affiliations", "references", "keywords"]
+    # for json_column in json_columns:
+    #     merged_df[json_column] = merged_df[json_column].apply(json.dumps)
 
     return merged_df
 
